@@ -47,14 +47,6 @@ vector<pair<int, int>> findAll(const Pentomino& p, const Array &l) {
     } return out;
 }
 
-void printPentomino(const Pentomino& p) {
-    for (int i = 0; i < p.width; i++) {
-        for (int j = 0; j < p.height; j++) {
-            cout << p.array[i][j];
-        } cout << endl;
-    } cout << endl;
-}
-
 int solcnt = 0;
 void checkSolution(const Array &a, const Array &l) {
     Array visited{};
