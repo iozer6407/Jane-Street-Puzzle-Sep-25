@@ -1,15 +1,15 @@
-bool overlap(const Pentomino& p, const int& x, const int &y, const Array &l) {
+bool overlap(const Array &l, const Pentomino& p, const pair<int, int> &pos) {
     for (int xx = 0; xx < p.width; xx++) {
         for (int yy = 0; yy < p.height; yy++) {
-            if (p.array[yy][xx] && l[y + yy][x + xx]) return true;
+            if (p.array[yy][xx] && l[pos.second + yy][pos.first + xx]) return true;
         }
     } return false;
 };
 
-void apply(const Pentomino& p, const int &x, const int &y, Array &l, const int &val) {
+void apply(Array &l, const Pentomino& p, const pair<int, int> &pos, const int &val) {
     for (int xx = 0; xx < p.width; xx++) {
         for (int yy = 0; yy < p.height; yy++) {
-            if (p.array[yy][xx]) l[y + yy][x + xx] = val;
+            if (p.array[yy][xx]) l[pos.second + yy][pos.first + xx] = val;
         }
     }
 }
@@ -70,12 +70,34 @@ void generategrids() {
     for (int idx = 0; idx < K; idx++)
         V[idx] = Pentomino(P[idx]).orientations();
 
-    // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    // F, I, L, N, T, U, V, W, X, Y, Z
+    using State = pair<int, pair<int, int>>; // Pregenerating placements
+    vector<vector<State>> all(11);
+
     // I needs to be on the top row    -> 1
-    // U needs to be on the top row    -> 5
-    // X needs to contain row 4        -> 8
     // N needs to contain row 6        -> 3
-    // Z needs to be on the bottom row -> 10
+    // U needs to be on the top row    -> 5
     // V needs to be on the bottom row -> 6
+    // X needs to contain row 4        -> 8
+    // Z needs to be on the bottom row -> 10
+    //-1, 8,-1, 5,-1, 8, 0,-1, 3,-1, 0 
+    // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    // F, I, L, N, T, U, V, W, X, Y, Z
+    vector<int> filters = {
+        -1, 0, -1, 5, -1, 0, 8, -1, 3, -1, 8  
+    };
+
+    // Filtering and positioning for both constrained and unconstrained
+    auto populate = [&] (const int &idx, const int &row, const bool &ignore) {
+        for (int i = 0; i < V[idx].size(); i++) {
+            for (int y = 0; y < N - V[idx][i].height + 1; y++) {
+            for (int x = 0; x < N - V[idx][i].width + 1; x++) {
+                if (ignore || (y <= row && row <= y + V[idx][i].height - 1)) {
+                    all[idx].push_back(make_pair(i, make_pair(x, y)));
+                }
+            } }
+        }
+    };
+
+    for (int idx = 0; idx < K; idx++)
+        populate(idx, filters[idx], filters[idx] == -1);
 }
