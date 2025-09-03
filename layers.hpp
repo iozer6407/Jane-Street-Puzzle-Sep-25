@@ -11,7 +11,7 @@ struct Layer {
 };
 vector<Layer> history;
 
-void getBounds(const ARRAY& g, int &minR,int &maxR,int &minC,int &maxC){
+void getBounds(const Array& g, int &minR,int &maxR,int &minC,int &maxC){
     minR=N; minC=N; maxR=-1; maxC=-1;
     for(int i=0;i<N;i++)
         for(int j=0;j<N;j++)
@@ -23,7 +23,7 @@ void getBounds(const ARRAY& g, int &minR,int &maxR,int &minC,int &maxC){
             }
 }
 
-bool wrap(ARRAY& g,int corner){
+bool wrap(Array& g,int corner){
     int minR,maxR,minC,maxC;
     getBounds(g,minR,maxR,minC,maxC);
 
@@ -54,7 +54,7 @@ bool wrap(ARRAY& g,int corner){
     return true;
 }
 
-bool backtrack(ARRAY& g){
+bool backtrack(Array& g){
     if(history.empty()) return false;
     Layer layer=history.back();
     history.pop_back();
@@ -62,9 +62,9 @@ bool backtrack(ARRAY& g){
     return true;
 }
 
-vector<ARRAY> possible;
+vector<Array> possible;
 bool apply(const vector<int> &marked) {
-    ARRAY g{};
+    Array g{};
     g[N/2][N/2] = 1;
 
     for (int i = 0; i < 8; i++) {
@@ -89,7 +89,7 @@ bool apply(const vector<int> &marked) {
 }
 
 int cnt = 0;
-void check(ARRAY &g) {
+void check(Array &g) {
     const int L = 8;
     vector<int> marked(L, false);
     marked[0] = 2; // It has to be the two.
@@ -138,7 +138,7 @@ void check(ARRAY &g) {
 }
 
 int searched = 0;
-void generateAll(ARRAY& g){
+void generateAll(Array& g){
     bool b = true;
 
     for(int dir=0;dir<4;dir++){

@@ -7,29 +7,8 @@
 #define K 11
 
 using namespace std;
-using ARRAY = array<array<int, N>, N>;
-
-void printArray(const ARRAY& l) {
-    for (int y = 0; y < N; y++) {
-        for (int x = 0; x < N; x++) {
-            cout << l[y][x] << " ";
-        } cout << endl;
-    } cout << endl;
-}
-
+#include "array.hpp"
 #include "layers.hpp"
-
-const ARRAY must = {
-    0, 0, 0, 0, 1, 0, 0, 0, 0,
-    0, 0, 0, 1, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 1, 0, 0, 0,
-    0, 0, 0, 0, 1, 0, 0, 0, 0,
-};
 
 const bool P[K][M][M] = { // 11 for the 11 pentominoes
     {
@@ -186,7 +165,7 @@ struct Pentomino {
     }
 };
 
-bool check(const Pentomino& p, const int& x, const int& y, const ARRAY &l) {
+bool check(const Pentomino& p, const int& x, const int& y, const Array &l) {
     int sum = 0;
     for (int i = 0; i < p.width; i++) {
         for (int j = 0; j < p.height; j++) {
@@ -195,7 +174,7 @@ bool check(const Pentomino& p, const int& x, const int& y, const ARRAY &l) {
     } return sum % 5 == 0;
 }
 
-bool overlap(const Pentomino& p, const int& x, const int &y, const ARRAY &l) {
+bool overlap(const Pentomino& p, const int& x, const int &y, const Array &l) {
     for (int i = 0; i < p.width; i++) {
         for (int j = 0; j < p.height; j++) {
             if (p.array[j][i] && l[y + j][x + i]) return true;
@@ -203,7 +182,7 @@ bool overlap(const Pentomino& p, const int& x, const int &y, const ARRAY &l) {
     } return false;
 };
 
-void apply(const Pentomino& p, const int &x, const int &y, ARRAY &l, const int &val) {
+void apply(const Pentomino& p, const int &x, const int &y, Array &l, const int &val) {
     for (int i = 0; i < p.width; i++) {
         for (int j = 0; j < p.height; j++) {
             if (p.array[j][i]) l[y + j][x + i] = val;
@@ -211,7 +190,7 @@ void apply(const Pentomino& p, const int &x, const int &y, ARRAY &l, const int &
     }
 }
 
-vector<pair<int, int>> findAll(const Pentomino& p, const ARRAY &l) {
+vector<pair<int, int>> findAll(const Pentomino& p, const Array &l) {
     vector<pair<int, int>> out;
     for (int x = 0; x < N - p.width + 1; x++) {
         for (int y = 0; y < N - p.height + 1; y++) {
@@ -231,8 +210,8 @@ void printPentomino(const Pentomino& p) {
 }
 
 int solcnt = 0;
-void checkSolution(const ARRAY &a, const ARRAY &l) {
-    ARRAY visited{};
+void checkSolution(const Array &a, const Array &l) {
+    Array visited{};
     int total = 0;
     for (int i = 0; i < N; i++)
         for (int j = 0; j < N; j++)
@@ -298,8 +277,8 @@ void checkSolution(const ARRAY &a, const ARRAY &l) {
     }
 }
 
-ARRAY generateBad(const ARRAY &l) {
-    ARRAY b{};
+Array generateBad(const Array &l) {
+    Array b{};
     for (int col = 0; col < N; col++) {
         if (l[3][col] == 6) break;
         b[3][col] = 1;
@@ -319,8 +298,8 @@ ARRAY generateBad(const ARRAY &l) {
     return b;
 }
 
-void findSolution(const ARRAY &l) {
-    const ARRAY b = generateBad(l);
+void findSolution(const Array &l) {
+    const Array b = generateBad(l);
     vector<vector<vector<pair<int, int>>>> V(K); // Pentomino, orientation, i -> (row, col)
     vector<vector<Pentomino>> O(K); // Keeping the orientations
     vector<int> k(K); // Keeping the number of orientations
@@ -359,14 +338,14 @@ void findSolution(const ARRAY &l) {
     };
 
     // Schema: key, i -> Orientation, (row, col)
-    ARRAY a{};
+    Array a{};
     vector<vector<pair<int, pair<int, int>>>> necessary(6);
     for (int i = 0; i < 6; i++) {
         necessary[i] = filter(filters[i].first, filters[i].second);
     }
     
     // Precompute states with the 6 necessary charachters valid
-    vector<ARRAY> possibleStates;
+    vector<Array> possibleStates;
 
     auto recurse = [&](auto self, int idx) -> void {
         if (idx == 6) { possibleStates.push_back(a); return; }
@@ -409,7 +388,7 @@ void findSolution(const ARRAY &l) {
 }
 
 int main() {
-    ARRAY g{};
+    Array g{};
     g[N/2][N/2] = 1;
     generateAll(g);
     cout << searched << endl;
