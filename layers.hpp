@@ -151,16 +151,6 @@ void generateAll(Array& g){
 
     if (b) {
         searched++;
-        // for (auto &layer1 : history) {
-        //     for (auto &cell : layer1.cells) {
-        //         for (auto &layer2 : history) {
-        //             if (&layer1 == &layer2) continue;
-        //             if (find(layer2.cells.begin(), layer2.cells.end(), cell) != layer2.cells.end()) {
-        //                 cout << "CELLS NOT DISJOINT" << endl;
-        //             }
-        //         }
-        //     }
-        // }
         check(g);
     }
 }

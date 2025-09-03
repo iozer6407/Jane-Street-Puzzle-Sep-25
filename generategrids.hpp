@@ -14,6 +14,19 @@ void apply(Array &l, const Pentomino& p, const pair<int, int> &pos, const int &v
     }
 }
 
+// All the spots that the final grid must contain
+const Array must = {
+    0, 0, 0, 0, 1, 0, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 0, 1, 0, 0, 0, 0,
+};
+
 bool checkGrid(const Array &g) {
     // The purpose of this function is to check that:
     //    1. There is no 2x2 that is completely full
@@ -25,10 +38,14 @@ bool checkGrid(const Array &g) {
 
     Array visited{};
     int total = 0;
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
             if (g[i][j])
                 total++;
+            else if (must[i][j])
+                return false;
+        }
+    }
 
     auto dfs = [&](auto self, const int &x, const int & y) -> int {
         if (x < 0 || y < 0 || x >= N || y >= N) return 0;
@@ -100,4 +117,65 @@ void generategrids() {
 
     for (int idx = 0; idx < K; idx++)
         populate(idx, filters[idx], filters[idx] == -1);
+    
+    Array g{};
+    // for (auto &state : all[Map['N']]) {
+    //     apply(g, V[Map['N']][state.first], state.second, 1);
+    //     printArray(g);
+    //     apply(g, V[Map['N']][state.first], state.second, 0);
+    // }
+    // cout << all[Map['N']].size() << endl;
+
+    // Manually doing the 6 necessary configurations, with the pairs going first.
+    // I needs to have smaller x than U
+    // Z needs to have smaller x than V
+    // N needs to have smaller x than X if N covers row 4
+    // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    // F, I, L, N, T, U, V, W, X, Y, Z
+    int cnt = 0;
+    vector<Array> grids;
+
+    auto generateFinal = [&](const int& idx = 0, const int& left = 2) {
+        cnt++;
+    };
+
+    for (auto &istate : all[Map['I']]) { // I loop, no need for checks
+        apply(g, V[Map['I']][istate.first], istate.second, 1);
+        for (auto &ustate : all[Map['U']]) { // U Loop
+            if (ustate.second.first < istate.second.first || 
+                overlap(g, V[Map['U']][ustate.first], ustate.second)
+            ) continue;
+            apply(g, V[Map['U']][ustate.first], ustate.second, 2);
+            for (auto &zstate : all[Map['Z']]) { // Z Loop, no need for checks
+                apply(g, V[Map['Z']][zstate.first], zstate.second, 3);
+                for (auto &vstate : all[Map['Z']]) { // V Loop
+                    if (vstate.second.first < zstate.second.first || 
+                        overlap(g, V[Map['V']][vstate.first], vstate.second)
+                    ) continue;
+                    apply(g, V[Map['V']][vstate.first], vstate.second, 4);
+                    for (auto &nstate : all[Map['N']]) { // N Loop
+                        if (overlap(g, V[Map['N']][nstate.first], nstate.second)) continue;
+                        apply(g, V[Map['N']][nstate.first], nstate.second, 5);
+                        for (auto &xstate : all[Map['X']]) { // X Loop
+                            if (
+                                (nstate.second.second <= 3 && 
+                                3 <= nstate.second.second + V[Map['X']][nstate.first].height - 1 &&
+                                xstate.second.first < nstate.second.first) ||
+                                overlap(g, V[Map['X']][xstate.first], xstate.second)
+                            ) continue;
+                            apply(g, V[Map['X']][xstate.first], xstate.second, 6);
+                            generateFinal();
+                            apply(g, V[Map['X']][xstate.first], xstate.second, 0);
+                        }
+                        apply(g, V[Map['N']][nstate.first], nstate.second, 0);
+                    }
+                    apply(g, V[Map['V']][vstate.first], vstate.second, 0);
+                }
+                apply(g, V[Map['Z']][zstate.first], zstate.second, 0);
+            }
+            apply(g, V[Map['U']][ustate.first], ustate.second, 0);
+        }
+        apply(g, V[Map['I']][istate.first], istate.second, 0);
+    }
+    cout << cnt << endl;
 }

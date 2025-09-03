@@ -1,3 +1,5 @@
+#include <unordered_map>
+
 #define K 11
 #define M 5
 
@@ -81,6 +83,20 @@ const bool P[K][M][M] = { // 11 for the 11 pentominoes
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0
     }
+};
+
+unordered_map<char, int> Map = {
+    {'F', 0}, 
+    {'I', 1},
+    {'L', 2},
+    {'N', 3},
+    {'T', 4},
+    {'U', 5}, 
+    {'V', 6},
+    {'W', 7},
+    {'X', 8},
+    {'Y', 9},
+    {'Z', 10},
 };
 
 struct Pentomino {
