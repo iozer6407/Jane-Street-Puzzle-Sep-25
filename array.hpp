@@ -1,3 +1,5 @@
+#define N 9
+
 using Array = array<array<int, N>, N>;
 
 void printArray(const Array& l) {

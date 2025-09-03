@@ -1,3 +1,6 @@
+#define K 11
+#define M 5
+
 const bool P[K][M][M] = { // 11 for the 11 pentominoes
     { // F
         0, 0, 0, 0, 0,
