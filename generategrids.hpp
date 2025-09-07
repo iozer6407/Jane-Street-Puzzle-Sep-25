@@ -87,13 +87,13 @@ void finalCheck(const Array &g, const Array &l) {
     if (!checkFirst(num, 6, 7, 2)) return; // value 7 in col 7 top→bottom
     if (!checkFirst(num, 2, 3, 3)) return; // value 3 in col 3 bottom→top
 
-    // if (!checkFirst(l, 0, Map['I'] + 1, 0)) return; // value I in row 1 left→right
-    // if (!checkFirst(5, Map['N'] + 1, 0)) return; // value N in row 6 left→right
-    // if (!checkFirst(8, Map['Z'] + 1, 0)) return; // value Z in row 9 left→right
+    if (!checkFirst(g, 0, Map['I'] + 1, 0)) return; // value I in row 1 left→right
+    if (!checkFirst(g, 5, Map['N'] + 1, 0)) return; // value N in row 6 left→right
+    if (!checkFirst(g, 8, Map['Z'] + 1, 0)) return; // value Z in row 9 left→right
 
-    // if (!checkFirst(0, Map['U'] + 1, 1)) return; // value U in row 1 right→left
-    // if (!checkFirst(3, Map['X'] + 1, 1)) return; // value X in row 4 right→left
-    // if (!checkFirst(8, Map['V'] + 1, 1)) return; // value V in row 9 right→left
+    if (!checkFirst(g, 0, Map['U'] + 1, 1)) return; // value U in row 1 right→left
+    if (!checkFirst(g, 3, Map['X'] + 1, 1)) return; // value X in row 4 right→left
+    if (!checkFirst(g, 8, Map['V'] + 1, 1)) return; // value V in row 9 right→left
 
     printArray(l);
     printArray(num);

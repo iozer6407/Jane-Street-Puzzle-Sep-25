@@ -16,7 +16,6 @@ int main() {
     backtrack(g);
     wrap(g, 3);
     generateAll(g);
-    cout << possible.size() << endl;
     
     for (auto &pl : possible) {
         generategrids(pl);
