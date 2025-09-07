@@ -3,8 +3,8 @@
 #include <array>
 
 using namespace std;
-#include "array.hpp"
 #include "pentomino.hpp"
+#include "array.hpp"
 #include "generategrids.hpp"
 #include "layers.hpp"
 
@@ -17,5 +17,8 @@ int main() {
     wrap(g, 3);
     generateAll(g);
     cout << possible.size() << endl;
-    generategrids(possible[0]);
+    
+    for (auto &pl : possible) {
+        generategrids(pl);
+    }
 }

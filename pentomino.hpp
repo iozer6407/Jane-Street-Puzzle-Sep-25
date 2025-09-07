@@ -99,6 +99,21 @@ unordered_map<char, int> Map = {
     {'Z', 10},
 };
 
+unordered_map<int, char> RevMap = {
+    {-1, '.'},
+    {0, 'F'},
+    {1, 'I'},
+    {2, 'L'},
+    {3, 'N'},
+    {4, 'T'},
+    {5, 'U'},
+    {6, 'V'},
+    {7, 'W'},
+    {8, 'X'},
+    {9, 'Y'},
+    {10,'Z'}
+};
+
 struct Pentomino {
     bool array[M][M];
     int width, height;
