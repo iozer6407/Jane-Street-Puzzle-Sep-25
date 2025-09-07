@@ -6,6 +6,15 @@ bool overlap(const Array &l, const Pentomino& p, const pair<int, int> &pos) {
     } return false;
 };
 
+bool check(const Array &l, const Pentomino& p, const pair<int, int> &pos) {
+    int sum = 0;
+    for (int xx = 0; xx < p.width; xx++) {
+        for (int yy = 0; yy < p.height; yy++) {
+            sum += p.array[yy][xx] * l[pos.second + yy][pos.first + xx];
+        }
+    } return sum % 5 == 0;
+};
+
 void apply(Array &l, const Pentomino& p, const pair<int, int> &pos, const int &val) {
     for (int xx = 0; xx < p.width; xx++) {
         for (int yy = 0; yy < p.height; yy++) {
@@ -86,117 +95,109 @@ bool checkGrid(const Array &g) {
     return true;
 }
 
-void generategrids() {
+void generategrids(const Array &l) {
     vector<vector<Pentomino>> V(K); // Pregenerating the orientations
     for (int idx = 0; idx < K; idx++)
         V[idx] = Pentomino(P[idx]).orientations();
 
-    using State = pair<int, pair<int, int>>; // Pregenerating placements
+    struct State {
+        int rot;
+        pair<int, int> pos;
+    };
     vector<vector<State>> all(K);
 
-    // I needs to be on the top row    -> 1
-    // N needs to contain row 6        -> 3
-    // U needs to be on the top row    -> 5
-    // V needs to be on the bottom row -> 6
-    // X needs to contain row 4        -> 8
-    // Z needs to be on the bottom row -> 10
-    //-1, 8,-1, 5,-1, 8, 0,-1, 3,-1, 0 
+    auto get = [&] (const int& pentomino, const int &rotation) -> Pentomino{
+        return V[pentomino][rotation];
+    };
+
+    // I needs to be on the top row    -> 0
+    // N needs to contain row 6        -> 5
+    // U needs to be on the top row    -> 0
+    // V needs to be on the bottom row -> 8
+    // X needs to contain row 4        -> 3
+    // Z needs to be on the bottom row -> 8
+    //-1, 0,-1, 5,-1, 0, 8,-1, 3, -1, 8 
     // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
     // F, I, L, N, T, U, V, W, X, Y, Z
     vector<int> filters = {
         -1, 0, -1, 5, -1, 0, 8, -1, 3, -1, 8  
     };
 
-    // Filtering and positioning for both constrained and unconstrained
     auto populate = [&] (const int &idx, const int &row, const bool &ignore) {
-        for (int i = 0; i < V[idx].size(); i++) {
-            for (int y = 0; y < N - V[idx][i].height + 1; y++) {
-            for (int x = 0; x < N - V[idx][i].width + 1; x++) {
-                if (ignore || (y <= row && row <= y + V[idx][i].height - 1)) {
-                    all[idx].push_back(make_pair(i, make_pair(x, y)));
+        for (int rot = 0; rot < V[idx].size(); rot++) {
+            const auto pent = get(idx, rot);
+            for (int y = 0; y < N - pent.height + 1; y++) {
+                for (int x = 0; x < N - pent.width + 1; x++) {
+                    if (ignore || (y <= row && row <= y + pent.height - 1)) {
+                        if (!check(l, pent, {x, y})) continue;
+                        all[idx].push_back({rot, {x, y}});
+                    }
                 }
-            } }
+            }
         }
     };
 
     for (int idx = 0; idx < K; idx++)
         populate(idx, filters[idx], filters[idx] == -1);
     
-    // int totalStates = 0;
-    // for (int i = 0; i < K; ++i) {
-    //     cout << "all[" << i << "].size() = " << all[i].size() << endl;
-    //     totalStates += all[i].size();
-    // }
-    // cout << "Total states stored: " << totalStates << endl;
-    
     Array g{};
-    // for (auto &state : all[Map['N']]) {
-    //     apply(g, V[Map['N']][state.first], state.second, 1);
-    //     printArray(g);
-    //     apply(g, V[Map['N']][state.first], state.second, 0);
-    // }
-    // cout << all[Map['N']].size() << endl;
-
-    // Manually doing the 6 necessary configurations, with the pairs going first.
-    // I needs to have smaller x than U
-    // Z needs to have smaller x than V
-    // N needs to have smaller x than X if N covers row 4
-    // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-    // F, I, L, N, T, U, V, W, X, Y, Z
     vector<Array> grids;
 
     const int unc = 5; // 5 unconstrained pentominoes
     vector<int> mp = {0, 2, 4, 7, 9};
     auto generateFinal = [&](auto self, const int& idx = 0, const int& left = 2) -> void {
-        for (const auto &state : all[mp[idx]]) {
-            if (overlap(g, V[mp[idx]][state.first], state.second)) continue;
-            apply(g, V[mp[idx]][state.first], state.second, 9 - left);
+        const auto index = mp[idx];
+        for (const auto &state : all[index]) {
+            const auto pent = get(index, state.rot);
+            if (overlap(g, pent, state.pos)) continue;
+            apply(g, pent, state.pos, 9 - left);
             if (left == 0) {
                 if (checkGrid(g)) grids.push_back(g);
             }
             else {
                 for (int jdx = idx + 1; jdx <= unc - left; jdx++) self(self, jdx, left - 1);
-            } apply(g, V[mp[idx]][state.first], state.second, 0);
+            }
+            apply(g, pent, state.pos, 0);
         }
     };
 
-    for (const auto &istate : all[Map['I']]) { // I loop, no need for checks
-        apply(g, V[Map['I']][istate.first], istate.second, 1);
+    for (const auto &istate : all[Map['I']]) { // I loop
+        apply(g, get(Map['I'], istate.rot), istate.pos, 1);
         for (const auto &ustate : all[Map['U']]) { // U Loop
-            if (ustate.second.first < istate.second.first || 
-                overlap(g, V[Map['U']][ustate.first], ustate.second)
+            if (ustate.pos.first < istate.pos.first || 
+                overlap(g, get(Map['U'], ustate.rot), ustate.pos)
             ) continue;
-            apply(g, V[Map['U']][ustate.first], ustate.second, 2);
-            for (const auto &zstate : all[Map['Z']]) { // Z Loop, no need for checks
-                apply(g, V[Map['Z']][zstate.first], zstate.second, 3);
+            apply(g, get(Map['U'], ustate.rot), ustate.pos, 2);
+            for (const auto &zstate : all[Map['Z']]) { // Z Loop
+                apply(g, get(Map['Z'], zstate.rot), zstate.pos, 3);
                 for (const auto &vstate : all[Map['V']]) { // V Loop
-                    if (vstate.second.first < zstate.second.first || 
-                        overlap(g, V[Map['V']][vstate.first], vstate.second)
+                    if (vstate.pos.first < zstate.pos.first || 
+                        overlap(g, get(Map['V'], vstate.rot), vstate.pos)
                     ) continue;
-                    apply(g, V[Map['V']][vstate.first], vstate.second, 4);
+                    apply(g, get(Map['V'], vstate.rot), vstate.pos, 4);
                     for (const auto &nstate : all[Map['N']]) { // N Loop
-                        if (overlap(g, V[Map['N']][nstate.first], nstate.second)) continue;
-                        apply(g, V[Map['N']][nstate.first], nstate.second, 5);
+                        if (overlap(g, get(Map['N'], nstate.rot), nstate.pos)) continue;
+                        apply(g, get(Map['N'], nstate.rot), nstate.pos, 5);
                         for (const auto &xstate : all[Map['X']]) { // X Loop
                             if (
-                                (nstate.second.second <= 3 && 
-                                3 <= nstate.second.second + V[Map['N']][nstate.first].height - 1 &&
-                                xstate.second.first < nstate.second.first) ||
-                                overlap(g, V[Map['X']][xstate.first], xstate.second)
+                                (nstate.pos.second <= 3 && 
+                                3 <= nstate.pos.second + get(Map['N'], nstate.rot).height - 1 &&
+                                xstate.pos.first < nstate.pos.first) ||
+                                overlap(g, get(Map['X'], xstate.rot), xstate.pos)
                             ) continue;
-                            apply(g, V[Map['X']][xstate.first], xstate.second, 6);
+                            apply(g, get(Map['X'], xstate.rot), xstate.pos, 6);
                             generateFinal(generateFinal);
-                            apply(g, V[Map['X']][xstate.first], xstate.second, 0);
+                            apply(g, get(Map['X'], xstate.rot), xstate.pos, 0);
                         }
-                        apply(g, V[Map['N']][nstate.first], nstate.second, 0);
+                        apply(g, get(Map['N'], nstate.rot), nstate.pos, 0);
                     }
-                    apply(g, V[Map['V']][vstate.first], vstate.second, 0);
+                    apply(g, get(Map['V'], vstate.rot), vstate.pos, 0);
                 }
-                apply(g, V[Map['Z']][zstate.first], zstate.second, 0);
+                apply(g, get(Map['Z'], zstate.rot), zstate.pos, 0);
             }
-            apply(g, V[Map['U']][ustate.first], ustate.second, 0);
+            apply(g, get(Map['U'], ustate.rot), ustate.pos, 0);
         }
-        apply(g, V[Map['I']][istate.first], istate.second, 0);
+        apply(g, get(Map['I'], istate.rot), istate.pos, 0);
     }
     cout << runcnt << " " << grids.size() << endl;
 }

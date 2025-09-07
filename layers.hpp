@@ -89,7 +89,7 @@ bool apply(const vector<int> &marked) {
 }
 
 int cnt = 0;
-void check(Array &g) {
+void checkLayout(Array &g) {
     const int L = 8;
     vector<int> marked(L, false);
     marked[0] = 2; // It has to be the two.
@@ -122,18 +122,18 @@ void check(Array &g) {
     for (auto &c3 : col3) {
         if (marked[c3]) continue;
         marked[c3] = 3;
-    for (auto &c7 : col7) {
-        if (marked[c7]) continue;
-        marked[c7] = 7;
-        for (auto &r4 : row4) {
-            if (marked[r4]) continue;
-            marked[r4] = 6;
-            if (apply(marked)) {
-                cnt++;
-            }
-            marked[r4] = 0;
-        } marked[c7] = 0;
-    } marked[c3] = 0;
+        for (auto &c7 : col7) {
+            if (marked[c7]) continue;
+            marked[c7] = 7;
+            for (auto &r4 : row4) {
+                if (marked[r4]) continue;
+                marked[r4] = 6;
+                if (apply(marked)) {
+                    cnt++;
+                }
+                marked[r4] = 0;
+            } marked[c7] = 0;
+        } marked[c3] = 0;
     }
 }
 
@@ -141,7 +141,7 @@ int searched = 0;
 void generateAll(Array& g){
     bool b = true;
 
-    for(int dir=0;dir<4;dir++){
+    for (int dir = 0; dir < 4; dir++){
         if (wrap(g,dir)) {
             b = false;
             generateAll(g);
@@ -151,6 +151,6 @@ void generateAll(Array& g){
 
     if (b) {
         searched++;
-        check(g);
+        checkLayout(g);
     }
 }
